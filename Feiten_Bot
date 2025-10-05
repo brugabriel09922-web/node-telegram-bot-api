@@ -1,0 +1,60 @@
+npm install node-telegram-bot-api
+// telegram.js
+const TelegramBot = require('node-telegram-bot-api');
+const { exec } = require('child_process');
+require('dotenv').config();
+
+// Seu token do BotFather
+const token = 'COLOQUE_AQUI_SEU_TOKEN_DO_BOT';
+
+// Cria o bot com polling (escuta de mensagens)
+const bot = new TelegramBot(token, { polling: true });
+
+// Seu comando para iniciar o Turbo Trader
+const tradingBotCmd = 'npm run telegram';
+
+// Quando o usuário digitar /start
+bot.onText(/\/start/, (msg) => {
+  bot.sendMessage(msg.chat.id, '🤖 Bot Solana iniciado! Use /buy ou /sell para ações.');
+});
+
+// Iniciar o trading bot
+bot.onText(/\/run/, (msg) => {
+  bot.sendMessage(msg.chat.id, '🚀 Iniciando o Solana Turbo Trader...');
+  exec(tradingBotCmd, (err, stdout, stderr) => {
+    if (err) {
+      bot.sendMessage(msg.chat.id, `❌ Erro: ${err.message}`);
+      return;
+    }
+    bot.sendMessage(msg.chat.id, `✅ Execução finalizada:\n${stdout}`);
+  });
+});
+
+// Status rápido
+bot.onText(/\/status/, (msg) => {
+  bot.sendMessage(msg.chat.id, '📊 O bot está rodando normalmente.');
+});
+
+// Simular compra
+bot.onText(/\/buy/, (msg) => {
+  bot.sendMessage(msg.chat.id, '💰 Executando compra conforme configuração .env...');
+  exec('node src/buy.js', (err) => {
+    if (err) bot.sendMessage(msg.chat.id, '❌ Falha ao comprar.');
+    else bot.sendMessage(msg.chat.id, '✅ Compra executada.');
+  });
+});
+
+// Simular venda
+bot.onText(/\/sell/, (msg) => {
+  bot.sendMessage(msg.chat.id, '💸 Executando venda...');
+  exec('node src/sell.js', (err) => {
+    if (err) bot.sendMessage(msg.chat.id, '❌ Falha ao vender.');
+    else bot.sendMessage(msg.chat.id, '✅ Venda concluída.');
+  });
+});
+
+"scripts": {
+  "start": "node index.js",
+  "telegram": "node telegram.js"
+
+}
